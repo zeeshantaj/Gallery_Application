@@ -1,11 +1,15 @@
 package com.example.gallery_application;
 
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -14,6 +18,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.github.chrisbanes.photoview.PhotoView;
 
 public class ImageFragment extends Fragment {
@@ -32,6 +38,7 @@ public class ImageFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             imagePath = getArguments().getString("imagePath");
         }
@@ -42,9 +49,10 @@ public class ImageFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_image, container, false);
         PhotoView imageView = rootView.findViewById(R.id.imageView);
 
-
         GestureDetector gestureDetector = new GestureDetector(getActivity(),new MyGestureListener());
-        Glide.with(this).load(imagePath).into(imageView);
+        Glide.with(this)
+                .load(imagePath)
+                .into(imageView);
 //
 
         imageView.setMaximumScale(5); // Adjust the maximum zoom level as needed
@@ -56,8 +64,11 @@ public class ImageFragment extends Fragment {
 //            }
 //        });
 
+      //  hideSystemUI();
         return rootView;
     }
+
+
     public class MyGestureListener  extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onFling(@Nullable MotionEvent e1, @NonNull MotionEvent e2, float velocityX, float velocityY) {
