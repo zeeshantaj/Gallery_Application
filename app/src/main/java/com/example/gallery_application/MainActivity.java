@@ -13,6 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 import com.example.gallery_application.Adapter.ImageAdapter;
 import com.example.gallery_application.Model.ImagesData;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private int startIndex = 0;
     private ImageAdapter adapter;
 
+    private int initialSpanCount = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         recyclerView = findViewById(R.id.imageRecycler);
+        //GridLayoutManager gridLayoutManager = new GridLayoutManager(this,4);
+        final GridLayoutManager layoutManager = new GridLayoutManager(this, initialSpanCount);
+
+        recyclerView.setLayoutManager(layoutManager);
+
         imagesData = new ArrayList<>();
 
         //recyclerView.setLayoutManager(new GridLayoutManager(this,4));
@@ -76,8 +84,60 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(MainActivity.this
+                    , new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                @Override
+                public boolean onScale(ScaleGestureDetector detector) {
+                    float scaleFactor = detector.getScaleFactor();
+
+                    if (scaleFactor > 1.0f) {
+                        // Zoom in
+                        layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
+                        recyclerView.getAdapter().notifyDataSetChanged();
+                        Log.e("MyApp","zoomIn");
+                    } else {
+                        // Zoom out
+                        Log.e("MyApp","zoomOut");
+                        layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
+                        recyclerView.getAdapter().notifyDataSetChanged();
+                    }
+
+                    return true;
+                }
+            });
+
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                scaleGestureDetector.onTouchEvent(e);
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+                // Not needed in this case
+
+            }
+
+
+        });
+
+
+
+
+
         retrieveImages();
     }
+
+    private void setLayout() {
+
+    }
+
     private void retrieveImages() {
         // Define the columns you want to retrieve
 //        String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA};

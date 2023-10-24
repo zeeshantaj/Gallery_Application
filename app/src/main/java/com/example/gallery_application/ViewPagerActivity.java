@@ -1,13 +1,26 @@
 package com.example.gallery_application;
 
+import static java.security.AccessController.getContext;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
+import android.annotation.SuppressLint;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +30,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.commit451.elasticdragdismisslayout.ElasticDragDismissFrameLayout;
+import com.commit451.elasticdragdismisslayout.ElasticDragDismissListener;
 import com.example.gallery_application.Adapter.ImagePagerAdapter;
 
 import java.util.ArrayList;
@@ -25,9 +40,8 @@ import java.util.List;
 public class ViewPagerActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
-    private boolean isToolbarVisible;
     private Toolbar toolbar;
-    private GestureDetector gestureDetector;
+    private ElasticDragDismissFrameLayout dragDismissFrameLayout;
 
 
     @Override
@@ -45,13 +59,34 @@ public class ViewPagerActivity extends AppCompatActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         viewPager = findViewById(R.id.viewPager);
         toolbar = findViewById(R.id.toolbar);
+        dragDismissFrameLayout = findViewById(R.id.dragDismiss);
 
+        dragDismissFrameLayout.addListener(new ElasticDragDismissListener() {
+            @Override
+            public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset, float rawOffsetPixels) {
+
+            }
+            @Override
+            public void onDragDismissed() {
+
+                finish();
+            }
+        });
 
         hideSystemUI();
 
         setViewPager();
         setToolbar();
     }
+
+    private void setViewPager() {
+
+        ArrayList<String> imagePaths = getIntent().getStringArrayListExtra("imagePath"); // Retrieve the ArrayList
+        int selectedPosition = getIntent().getIntExtra("position", 0);
+        ImagePagerAdapter imagePagerAdapter = new ImagePagerAdapter(getSupportFragmentManager(), imagePaths);
+        viewPager.setAdapter(imagePagerAdapter);
+        viewPager.setCurrentItem(selectedPosition);
+       }
     private void hideSystemUI() {
         //todo hide the navigation bar
         View decorView = getWindow().getDecorView();
@@ -61,13 +96,13 @@ public class ViewPagerActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
-
     private void setToolbar() {
+
 
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            //actionBar.setHomeAsUpIndicator(R.drawable.circle_arrow);
+            //actionBar.setHomeAsUpIndicator();
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
@@ -81,18 +116,4 @@ public class ViewPagerActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
 
     }
-    private void setViewPager() {
-
-        ArrayList<String> imagePaths = getIntent().getStringArrayListExtra("imagePath"); // Retrieve the ArrayList
-
-        int selectedPosition = getIntent().getIntExtra("position", 0);
-
-        Log.e("MyApp","ViewPager"+imagePaths.size());
-        Log.e("MyApp","position"+selectedPosition);
-        ImagePagerAdapter imagePagerAdapter = new ImagePagerAdapter(getSupportFragmentManager(), imagePaths);
-
-        viewPager.setAdapter(imagePagerAdapter);
-        viewPager.setCurrentItem(selectedPosition);
-       }
-
 }

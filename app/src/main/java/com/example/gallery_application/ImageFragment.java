@@ -3,6 +3,7 @@ package com.example.gallery_application;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,6 +21,8 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.commit451.elasticdragdismisslayout.ElasticDragDismissFrameLayout;
+import com.commit451.elasticdragdismisslayout.ElasticDragDismissListener;
 import com.github.chrisbanes.photoview.PhotoView;
 
 public class ImageFragment extends Fragment {
@@ -48,14 +51,15 @@ public class ImageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image, container, false);
         PhotoView imageView = rootView.findViewById(R.id.imageView);
+        //ImageView imageView = rootView.findViewById(R.id.imageView);
 
-        GestureDetector gestureDetector = new GestureDetector(getActivity(),new MyGestureListener());
+       // GestureDetector gestureDetector = new GestureDetector(getActivity(),new MyGestureListener());
         Glide.with(this)
                 .load(imagePath)
                 .into(imageView);
 //
 
-        imageView.setMaximumScale(5); // Adjust the maximum zoom level as needed
+       imageView.setMaximumScale(5); // Adjust the maximum zoom level as needed
 //        imageView.setOnTouchListener(new View.OnTouchListener() {
 //            @Override
 //            public boolean onTouch(View v, MotionEvent event) {
@@ -65,6 +69,11 @@ public class ImageFragment extends Fragment {
 //        });
 
       //  hideSystemUI();
+
+
+
+
+
         return rootView;
     }
 
