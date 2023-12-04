@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.View;
 
 import com.example.gallery_application.Adapter.ImageAdapter;
 import com.example.gallery_application.Model.ImagesData;
@@ -34,29 +35,22 @@ public class MainActivity extends AppCompatActivity {
     private int batchSize = 10;
     private int startIndex = 0;
     private ImageAdapter adapter;
-
     private int initialSpanCount = 4;
+    private ScaleGestureDetector scaleGestureDetector;
+    private GridLayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         recyclerView = findViewById(R.id.imageRecycler);
         //GridLayoutManager gridLayoutManager = new GridLayoutManager(this,4);
-        final GridLayoutManager layoutManager = new GridLayoutManager(this, initialSpanCount);
-
+        layoutManager = new GridLayoutManager(this, initialSpanCount);
         recyclerView.setLayoutManager(layoutManager);
-
         imagesData = new ArrayList<>();
-
         //recyclerView.setLayoutManager(new GridLayoutManager(this,4));
-
-
-        adapter=new ImageAdapter(imagesData,this);
+        adapter=new ImageAdapter(imagesData,this,initialSpanCount);
         recyclerView.setAdapter(adapter);
-
-
         // Load the initial batch of images
         retrieveImages(startIndex, batchSize);
 
@@ -66,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -84,95 +77,73 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(MainActivity.this
-                    , new ScaleGestureDetector.SimpleOnScaleGestureListener() {
-                @Override
-                public boolean onScale(ScaleGestureDetector detector) {
-                    float scaleFactor = detector.getScaleFactor();
+        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureListener());
 
-                    if (scaleFactor > 1.0f) {
-                        // Zoom in
-                        layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
-                        recyclerView.getAdapter().notifyDataSetChanged();
-                        Log.e("MyApp","zoomIn");
-                    } else {
-                        // Zoom out
-                        Log.e("MyApp","zoomOut");
-                        layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
-                        recyclerView.getAdapter().notifyDataSetChanged();
-                    }
-
-                    return true;
-                }
-            });
-
-
+        recyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            public boolean onTouch(View v, MotionEvent event) {
+                scaleGestureDetector.onTouchEvent(event);
                 return false;
             }
-
-            @Override
-            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                scaleGestureDetector.onTouchEvent(e);
-            }
-
-            @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-                // Not needed in this case
-
-            }
-
-
         });
-
-
-
-
-
+//        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+//            ScaleGestureDetector scaleGestureDetector = new ScaleGestureDetector(MainActivity.this
+//                    , new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+//                @Override
+//                public boolean onScale(ScaleGestureDetector detector) {
+//                    float scaleFactor = detector.getScaleFactor();
+//
+//                    if (scaleFactor > 1.0f) {
+//                        // Zoom in
+//                        layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
+//                        recyclerView.getAdapter().notifyDataSetChanged();
+//                        Log.e("MyApp","zoomIn");
+//                    } else {
+//                        // Zoom out
+//                        Log.e("MyApp","zoomOut");
+//                        layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
+//                        recyclerView.getAdapter().notifyDataSetChanged();
+//                    }
+//
+//                    return true;
+//                }
+//            });
+//            @Override
+//            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+//                return false;
+//            }
+//            @Override
+//            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+//                scaleGestureDetector.onTouchEvent(e);
+//            }
+//            @Override
+//            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+//                // Not needed in this case
+//            }
+//        });
         retrieveImages();
     }
+    private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            float scaleFactor = detector.getScaleFactor();
 
-    private void setLayout() {
+            if (scaleFactor > 1.0f && layoutManager.getSpanCount() < 14) {
+                // Zoom in - Limit the maximum span count to 8 (adjust as needed)
+                layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
+                adapter.updateSpanCount(layoutManager.getSpanCount() );
+                adapter.notifyDataSetChanged();
+                return true;
+            } else if (scaleFactor < 1.0f && layoutManager.getSpanCount() > 1) {
+                // Zoom out - Limit the minimum span count to 1 (adjust as needed)
+                layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
+                adapter.updateSpanCount(layoutManager.getSpanCount() );
+                adapter.notifyDataSetChanged();
+                return true;
+            }
 
-    }
-
-    private void retrieveImages() {
-        // Define the columns you want to retrieve
-//        String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA};
-//
-//        // Create a cursor to query the images in the MediaStore
-//        Cursor cursor = getContentResolver().query(
-//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                projection,
-//                null,
-//                null,
-//                null
-//        );
-//
-//        // Check if the cursor is not null and has data
-//        if (cursor != null && cursor.moveToFirst()) {
-//            int idColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-//            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-//
-//            do {
-//                // Retrieve image details
-//                long imageId = cursor.getLong(idColumnIndex);
-//                String imagePath = cursor.getString(dataColumnIndex);
-//                // Do something with the image data, e.g., display, store, or process it
-//                // Here, you can display or process each image using its path (imagePath)
-//                ImagesData imagesData1 = new ImagesData(imagePath);
-//                imagesData.add(imagesData1);
-//                adapter = new ImageAdapter(imagesData,MainActivity.this);
-//
-//
-//            } while (cursor.moveToNext());
-//
-//            // Close the cursor when done
-//            cursor.close();
-//        }
-//        recyclerView.setAdapter(adapter);
+            return false;
+        }
     }
     private void retrieveImages(int startIndex, int batchSize) {
         // Define the columns you want to retrieve
@@ -224,6 +195,42 @@ public class MainActivity extends AppCompatActivity {
     private String formatDate(long timestamp) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         return sdf.format(new Date(timestamp * 1000)); // Convert seconds to milliseconds
+    }
+    private void retrieveImages() {
+        // Define the columns you want to retrieve
+//        String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA};
+//
+//        // Create a cursor to query the images in the MediaStore
+//        Cursor cursor = getContentResolver().query(
+//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                projection,
+//                null,
+//                null,
+//                null
+//        );
+//
+//        // Check if the cursor is not null and has data
+//        if (cursor != null && cursor.moveToFirst()) {
+//            int idColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
+//            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+//
+//            do {
+//                // Retrieve image details
+//                long imageId = cursor.getLong(idColumnIndex);
+//                String imagePath = cursor.getString(dataColumnIndex);
+//                // Do something with the image data, e.g., display, store, or process it
+//                // Here, you can display or process each image using its path (imagePath)
+//                ImagesData imagesData1 = new ImagesData(imagePath);
+//                imagesData.add(imagesData1);
+//                adapter = new ImageAdapter(imagesData,MainActivity.this);
+//
+//
+//            } while (cursor.moveToNext());
+//
+//            // Close the cursor when done
+//            cursor.close();
+//        }
+//        recyclerView.setAdapter(adapter);
     }
 
 }
