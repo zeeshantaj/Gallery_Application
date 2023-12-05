@@ -1,5 +1,6 @@
 package com.example.gallery_application.Adapter;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.util.DisplayMetrics;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -85,6 +87,8 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
 
     private List<ImagesData> imagesData;
     private Context context;
+    private int fixedImageWidth; // Set your desired fixed width
+    private int fixedImageHeight; // Set your desired fixed height
     private int spanCount;
 
     // Constructor to initialize data and context
@@ -92,6 +96,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         this.imagesData = imagesData;
         this.context = context;
         this.spanCount = spanCount;
+
+        this.fixedImageWidth = 200;
+        this.fixedImageHeight = 200;
     }
 
     // Update the span count
@@ -114,6 +121,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         layoutParams.width = calculateImageWidth();
         layoutParams.height = calculateImageHeight();
         holder.imageView.setLayoutParams(layoutParams);
+
+        int targetWidth = calculateImageWidth();
+        int targetHeight = calculateImageHeight();
+
+        animateItemSize(holder.imageView, layoutParams.width, layoutParams.height, targetWidth, targetHeight);
 
         // Load image using a library like Glide or Picasso
         // For example using Glide:
@@ -168,4 +180,16 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageViewHol
         return calculateImageWidth(); // You can adjust the height proportionally if needed
     }
 
+    private void animateItemSize(final View view, int startWidth, int startHeight, int targetWidth, int targetHeight) {
+        ValueAnimator animator = ValueAnimator.ofInt(startWidth, targetWidth);
+        animator.addUpdateListener(animation -> {
+            int value = (int) animation.getAnimatedValue();
+            ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+            layoutParams.width = value;
+            layoutParams.height = startHeight * targetWidth / startWidth; // Maintain aspect ratio
+            view.setLayoutParams(layoutParams);
+        });
+        animator.setDuration(100); // Set the duration of the animation
+        animator.start();
+    }
 }

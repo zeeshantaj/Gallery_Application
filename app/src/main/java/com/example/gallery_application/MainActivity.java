@@ -123,22 +123,58 @@ public class MainActivity extends AppCompatActivity {
 //        });
         retrieveImages();
     }
+    private void updateSpanCount(int newSpanCount) {
+        final int oldSpanCount = layoutManager.getSpanCount();
+
+        // Notify adapter about the new span count
+        adapter.updateSpanCount(newSpanCount);
+
+        // Smoothly scroll to the first visible item to maintain the position
+        final int firstVisiblePosition = ((GridLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+        if (firstVisiblePosition != RecyclerView.NO_POSITION) {
+            final int columnWidth = recyclerView.getWidth() / newSpanCount;
+            final int offset = (firstVisiblePosition % oldSpanCount) * columnWidth;
+            recyclerView.post(() -> {
+                recyclerView.scrollBy(offset, 0);
+            });
+        }
+
+        // Invalidate the layout manager to force RecyclerView to redraw items with new sizes
+        recyclerView.postDelayed(() -> {
+            layoutManager.setSpanCount(newSpanCount);
+            layoutManager.requestLayout();
+        }, 100); // Delay added to ensure the RecyclerView layout is updated after the adapter change
+    }
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+//            float scaleFactor = detector.getScaleFactor();
+//
+//            if (scaleFactor > 1.0f && layoutManager.getSpanCount() < 14) {
+//                // Zoom in - Limit the maximum span count to 8 (adjust as needed)
+//                layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
+//                adapter.updateSpanCount(layoutManager.getSpanCount() );
+//                adapter.notifyDataSetChanged();
+//                return true;
+//            } else if (scaleFactor < 1.0f && layoutManager.getSpanCount() > 1) {
+//                // Zoom out - Limit the minimum span count to 1 (adjust as needed)
+//                layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
+//                adapter.updateSpanCount(layoutManager.getSpanCount() );
+//                adapter.notifyDataSetChanged();
+//                return true;
+//            }
+//
+//            return false;
             float scaleFactor = detector.getScaleFactor();
 
             if (scaleFactor > 1.0f && layoutManager.getSpanCount() < 14) {
                 // Zoom in - Limit the maximum span count to 8 (adjust as needed)
-                layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
-                adapter.updateSpanCount(layoutManager.getSpanCount() );
-                adapter.notifyDataSetChanged();
+                updateSpanCount(layoutManager.getSpanCount() + 1);
                 return true;
-            } else if (scaleFactor < 1.0f && layoutManager.getSpanCount() > 1) {
+            }
+            else if (scaleFactor < 1.0f && layoutManager.getSpanCount() > 4) {
                 // Zoom out - Limit the minimum span count to 1 (adjust as needed)
-                layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
-                adapter.updateSpanCount(layoutManager.getSpanCount() );
-                adapter.notifyDataSetChanged();
+                updateSpanCount(layoutManager.getSpanCount() - 1);
                 return true;
             }
 
