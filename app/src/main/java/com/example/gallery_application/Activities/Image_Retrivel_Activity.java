@@ -1,206 +1,130 @@
 package com.example.gallery_application.Activities;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.os.Environment;
 import android.util.Log;
-import android.widget.ImageView;
+import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
-import com.bumptech.glide.Glide;
-import com.example.gallery_application.Adapter.FolderRecyclerAdapter;
-import com.example.gallery_application.Model.ImageData;
-import com.example.gallery_application.Model.ImagesData;
+import com.example.gallery_application.Adapter.BucketRecyclerAdapter;
 import com.example.gallery_application.R;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Image_Retrivel_Activity extends AppCompatActivity {
 
 
-    //private List<ImagesData> imagesData;
-    private CardView cardViewFolders;
-    private ImageView thumbnail1,thumbnail2,thumbnail3,thumbnail4;
-    private Set<String> processedPaths = new HashSet<>();
-    private List<ImagesData> imagesData;
+    private List<Bucket> bucketList;
+    //private Bucket bucket;
+    private BucketRecyclerAdapter adapter;
     private RecyclerView recyclerView;
-    private FolderRecyclerAdapter adapter;
-
-    List<String> modifiedPathArray = new ArrayList<>();
+    private RelativeLayout splashLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_retrivel);
 
-        imagesData = new ArrayList<>();
+        showSplashScreen();
 
-        Set<String> uniquePathsSet = new HashSet<>(modifiedPathArray);
-        modifiedPathArray.clear();
-        modifiedPathArray.addAll(uniquePathsSet);
+        String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
+        new ImageDirectoriesAsyncTask().execute(new File(ROOT_DIR));
 
-        Log.e("MyApp","modifiedArraySize"+modifiedPathArray.size());
-        retrieveImages();
-        retrieveLast4Images(modifiedPathArray);
+//        String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
+////        findImageDirectories(new File(ROOT_DIR));
+//        List<String> imageDirectories = findImageDirectories(new File(ROOT_DIR));
+//
+//        bucketList = new ArrayList<>();
+//
+//        // Print the names of image directories
+//
+//        Log.e("Myapp","BucketSize"+bucketList.size());
+//        for (String directoryName : imageDirectories) {
+//            System.out.println("Image Directory: " + directoryName);
+//            bucket = new Bucket(directoryName);
+//            bucketList.add(bucket);
+//        }
+//        recyclerView = findViewById(R.id.imageFolderRecycler);
+//        GridLayoutManager gridLayoutManager = new GridLayoutManager(this,2);
+//        recyclerView.setLayoutManager(gridLayoutManager);
+//        adapter = new BucketRecyclerAdapter(bucketList);
+//        recyclerView.setAdapter(adapter);
+//        adapter.notifyDataSetChanged();
 
     }
+    private class ImageDirectoriesAsyncTask extends AsyncTask<File, Void, List<Bucket>> {
+        @Override
+        protected List<Bucket> doInBackground(File... params) {
+            File rootDirectory = params[0];
+            return findImageDirectories(rootDirectory);
+        }
 
-private void retrieveLast4Images(List<String> paths) {
-    int batchSize = 4; // Set the number of images to retrieve for each path
+        @Override
+        protected void onPostExecute(List<Bucket> result) {
+            super.onPostExecute(result);
+            bucketList = result;
 
-    for (String path : paths) {
-        // Define the columns you want to retrieve
-        String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA};
-        // Define the sorting order (DATE_ADDED in descending order)
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-        // Create a cursor to query the images in the MediaStore with pagination
-        Cursor cursor = getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                MediaStore.Images.Media.DATA + " LIKE ?",
-                new String[]{path + "%"}, // Filter by the specific path
-                sortOrder
-        );
+            Log.e("Myapp", "BucketSize" + bucketList.size());
+            // Hide splash screen
+            hideSplashScreen();
 
-        if (cursor != null) {
-            int idColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+            recyclerView = findViewById(R.id.imageFolderRecycler);
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(Image_Retrivel_Activity.this, 2);
+            recyclerView.setLayoutManager(gridLayoutManager);
 
-            int count = 0;
-            if (cursor.moveToFirst()) {
-                do {
-                    long imageId = cursor.getLong(idColumnIndex);
-                    String imagePath = cursor.getString(dataColumnIndex);
-                    Log.e("MyApp", "imagePath:count " +count+ imagePath);
-                    modifiedPathArray.add(imagePath);
-                    // Load images in batches of batchSize
-                    count++;
-                    if (count >= batchSize) {
-                        break;
-                    }
-                } while (cursor.moveToNext());
-            }
-
-            cursor.close(); // Close the cursor after retrieving images for a path
+            adapter = new BucketRecyclerAdapter(bucketList);
+            recyclerView.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
         }
     }
-}
-    private void createFolders(List<ImagesData> imagesDataList) {
-        for (ImagesData imageData : imagesDataList) {
-            String imagePath = imageData.getImagePath();
-            File imageFile = new File(imagePath);
-            String folderPath = imageFile.getParent(); // Get the parent folder path
+    private List<Bucket> findImageDirectories(File directory) {
+        List<Bucket> imageDirectories = new ArrayList<>();
+        File[] subDirectories = directory.listFiles(File::isDirectory);
 
-
-
-            if (folderPath != null) {
-
-                String modifiedFolderPath = modifyPath(folderPath);
-                modifiedPathArray.add(modifiedFolderPath);
-                File folder = new File(folderPath);
-                // loadThumbnailImages(folderPath);
-                if (!folder.exists()) {
-                    folder.mkdirs(); // Create parent directories as well
-                    boolean created = folder.mkdirs(); // Create parent directories as well
-                    Log.e("MyApp", "Folder Created: " + created);
-                    // Load and display 4 images as thumbnails
+        if (subDirectories != null) {
+            for (File subDirectory : subDirectories) {
+                // Define your criteria for identifying image directories
+                if (containsImages(subDirectory)) {
+                    imageDirectories.add(new Bucket(subDirectory.getName()));
                 }
 
-
-
-            }
-
-        }
-
-    }
-    private String modifyPath(String path) {
-        // Split the path by slashes
-        String[] parts = path.split("/");
-        // If there are at least two parts, remove everything except the first and last parts
-        int numberOfSlashes = countSlashes(path);
-
-        if (numberOfSlashes >= parts.length) {
-            String modifiedPath = "/" + parts[parts.length - 5] +
-                    parts[parts.length - 4] + "/" +
-                    parts[parts.length - 3] + "/" +
-                    parts[parts.length - 2] + "/" +
-                    parts[parts.length - 1];
-
-            // Check if the modified path is already processed
-            if (!processedPaths.contains(modifiedPath)) {
-                processedPaths.add(modifiedPath);
-                Log.e("MyApp", "modifiedFolderPath: " + processedPaths.size());
-                int numberOfSlashesInModifiedPath = countSlashes(modifiedPath);
-                System.out.println("Number of slashes in modified path: " + numberOfSlashesInModifiedPath);
-
-                return modifiedPath;
+                // Recursively search in subdirectories
+                imageDirectories.addAll(findImageDirectories(subDirectory));
             }
         }
-
-
-        return path;
-    }
-    private static int countSlashes(String input) {
-        // Split the input string based on the slash character
-        String[] parts = input.split("/");
-
-        // Return the count of slashes
-        return parts.length - 1; // Subtract 1 to get the count of slashes
-    }
-    private void retrieveImages() {
-        // Define the columns you want to retrieve
-        String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA};
-
-        // Define the sorting order (DATE_ADDED in descending order)
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-        // Create a cursor to query the images in the MediaStore with pagination
-        Cursor cursor = getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                null,
-                null,
-                sortOrder
-        );
-
-        if (cursor != null) {
-            int idColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-
-            // Move the cursor to the startIndex
-            if (cursor.moveToNext()) {
-                int count = 0;
-                do {
-                    long imageId = cursor.getLong(idColumnIndex);
-                    String imagePath = cursor.getString(dataColumnIndex);
-                    Log.e("MyApp","imagePath"+imagePath);
-
-                    ImagesData imagesData1 = new ImagesData(imagePath);
-                    imagesData.add(imagesData1);
-
-                    Log.e("MyApp","imageDataSize"+imagesData.size());
-                    createFolders(imagesData);
-                    //  openImagesInFolder(imagesData);
-
-                    count++;
-
-                    // Load images in batches of batchSize
-//                    if (count >= batchSize) {
-//                        break;
-//                    }
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        }
-
+        return imageDirectories;
     }
 
+    private static boolean containsImages(File directory) {
+        // Define a custom FilenameFilter to filter files based on their extensions (e.g., jpg, png, etc.)
+        FilenameFilter imageFilter = (dir, name) -> name.toLowerCase().endsWith(".jpg")
+                || name.toLowerCase().endsWith(".jpeg")
+                || name.toLowerCase().endsWith(".png")
+                || name.toLowerCase().endsWith(".avif");
+
+        // List files in the directory using the filter
+        File[] files = directory.listFiles(imageFilter);
+
+        // If there are image files in the directory, consider it an image directory
+        return files != null && files.length > 0;
+    }
+    private void showSplashScreen() {
+        splashLayout = new RelativeLayout(this);
+        splashLayout.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        splashLayout.setBackgroundResource(R.color.splashBg);
+        setContentView(splashLayout);
+    }
+
+    private void hideSplashScreen() {
+        setContentView(R.layout.activity_image_retrivel); // Switch back to the main layout
+        splashLayout = null; // Release the splashLayout reference
+    }
 }
