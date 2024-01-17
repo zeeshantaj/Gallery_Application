@@ -203,7 +203,9 @@ public class MainActivity extends AppCompatActivity {
 
             // Move the cursor to the startIndex
             if (cursor.moveToPosition(startIndex)) {
+
                 int count = 0;
+
                 do {
                     long imageId = cursor.getLong(idColumnIndex);
                     String imagePath = cursor.getString(dataColumnIndex);
