@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -37,9 +38,24 @@ public class FolderRecyclerAdapter extends RecyclerView.Adapter<FolderRecyclerAd
         List<String> imagePaths = imageCard.getImagePaths();
 
 
-        Glide.with(holder.itemView.getContext())
-                .load(imageCard.getImagePaths())
-                .into(holder.img);
+        for (int i = 0; i < 4; i++) {
+            ImageView imageView = getImageViewById(holder, i + 1);
+            if (i < imagePaths.size()) {
+                // Load image using your preferred image loading library (e.g., Glide or Picasso)
+                // For simplicity, using a placeholder image here
+
+                Glide.with(holder.itemView.getContext())
+                                .load(imagePaths)
+                                        .into(imageView);
+                //imageView.setImageResource(R.drawable.placeholder_image);
+
+
+                // Replace 'R.drawable.placeholder_image' with the actual image loading code
+            } else {
+                // If there are fewer than 4 images, hide the remaining ImageViews
+                imageView.setVisibility(View.GONE);
+            }
+        }
 
     }
 
@@ -47,18 +63,34 @@ public class FolderRecyclerAdapter extends RecyclerView.Adapter<FolderRecyclerAd
     public int getItemCount() {
         return folderModels.size();
     }
+    private ImageView getImageViewById(ViewHolder holder, int id) {
+        switch (id) {
+            case 1:
+                return holder.imageView1;
+            case 2:
+                return holder.imageView2;
+            case 3:
+                return holder.imageView3;
+            case 4:
+                return holder.imageView4;
+            default:
+                throw new IllegalArgumentException("Invalid image view ID");
+        }
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         List<ImageView> imageViews;
-        ImageView img;
+        ImageView imageView1;
+        ImageView imageView2;
+        ImageView imageView3;
+        ImageView imageView4;
+        private CardView cardView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            imageViews = new ArrayList<>();
-            imageViews.add(itemView.findViewById(R.id.imageView1));
-            imageViews.add(itemView.findViewById(R.id.imageView2));
-            imageViews.add(itemView.findViewById(R.id.imageView3));
-            imageViews.add(itemView.findViewById(R.id.imageView4));
-            img = itemView.findViewById(R.id.imageView1);
+            imageView1 = itemView.findViewById(R.id.imageView1);
+            imageView2 = itemView.findViewById(R.id.imageView2);
+            imageView3 = itemView.findViewById(R.id.imageView3);
+            imageView4 = itemView.findViewById(R.id.imageView4);
 
         }
     }
