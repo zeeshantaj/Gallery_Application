@@ -20,6 +20,7 @@ import android.view.View;
 import com.example.gallery_application.Adapter.ImageAdapter;
 import com.example.gallery_application.Model.ImagesData;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -187,8 +188,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Define the sorting order (DATE_ADDED in descending order)
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-
-
         // Create a cursor to query the images in the MediaStore with pagination
         Cursor cursor = getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -208,25 +207,37 @@ public class MainActivity extends AppCompatActivity {
                 do {
                     long imageId = cursor.getLong(idColumnIndex);
                     String imagePath = cursor.getString(dataColumnIndex);
+                    Log.e("MyApp","imagePath"+imagePath);
+
                     ImagesData imagesData1 = new ImagesData(imagePath);
                     imagesData.add(imagesData1);
-
-
                     count++;
-
 
                     // Load images in batches of batchSize
                     if (count >= batchSize) {
-
                         break;
                     }
                 } while (cursor.moveToNext());
             }
-
             cursor.close();
         }
         // Notify the adapter that the data set has changed
         adapter.notifyDataSetChanged();
+    }
+    private static void createFolderForPath(String path) {
+        File file = new File(path);
+        File folder = file.getParentFile();
+
+        if (!folder.exists()) {
+            boolean success = folder.mkdirs();
+            if (success) {
+                Log.e("MyApp","folder created ->"+folder.getAbsolutePath());
+
+            } else {
+                Log.e("MyApp","folder is not created ->"+folder.getAbsolutePath());
+
+            }
+        }
     }
     private String formatDate(long timestamp) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
