@@ -16,9 +16,14 @@ import java.util.List;
 
 public class Bucket_ImagesAdapter extends RecyclerView.Adapter<Bucket_ImagesAdapter.ViewHolder> {
     private List<ImagesData> imagesData;
-
-    public Bucket_ImagesAdapter(List<ImagesData> imagesData) {
+    private int spanCount;
+    public Bucket_ImagesAdapter(List<ImagesData> imagesData, int spanCount) {
         this.imagesData = imagesData;
+        this.spanCount = spanCount;
+    }
+    public void updateSpanCountBucket(int spanCount) {
+        this.spanCount = spanCount;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -32,6 +37,7 @@ public class Bucket_ImagesAdapter extends RecyclerView.Adapter<Bucket_ImagesAdap
     public void onBindViewHolder(@NonNull Bucket_ImagesAdapter.ViewHolder holder, int position) {
         Glide.with(holder.itemView.getContext())
                 .load(imagesData.get(position).getImagePath())
+                .thumbnail(0.5f)
                 .into(holder.imageView);
     }
 

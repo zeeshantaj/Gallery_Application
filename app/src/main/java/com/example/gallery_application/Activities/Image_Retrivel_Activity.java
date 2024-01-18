@@ -146,7 +146,7 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
         }
         return imagePaths;
     }
-    private static boolean containsImages(File directory) {
+    public static boolean containsImages(File directory) {
         // Define a custom FilenameFilter to filter files based on their extensions (e.g., jpg, png, etc.)
         FilenameFilter imageFilter = (dir, name) -> name.toLowerCase().endsWith(".jpg")
                 || name.toLowerCase().endsWith(".jpeg")

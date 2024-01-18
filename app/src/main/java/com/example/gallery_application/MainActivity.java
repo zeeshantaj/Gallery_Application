@@ -149,23 +149,6 @@ public class MainActivity extends AppCompatActivity {
     private class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-//            float scaleFactor = detector.getScaleFactor();
-//
-//            if (scaleFactor > 1.0f && layoutManager.getSpanCount() < 14) {
-//                // Zoom in - Limit the maximum span count to 8 (adjust as needed)
-//                layoutManager.setSpanCount(layoutManager.getSpanCount() + 1);
-//                adapter.updateSpanCount(layoutManager.getSpanCount() );
-//                adapter.notifyDataSetChanged();
-//                return true;
-//            } else if (scaleFactor < 1.0f && layoutManager.getSpanCount() > 1) {
-//                // Zoom out - Limit the minimum span count to 1 (adjust as needed)
-//                layoutManager.setSpanCount(layoutManager.getSpanCount() - 1);
-//                adapter.updateSpanCount(layoutManager.getSpanCount() );
-//                adapter.notifyDataSetChanged();
-//                return true;
-//            }
-//
-//            return false;
             float scaleFactor = detector.getScaleFactor();
 
             if (scaleFactor > 1.0f && layoutManager.getSpanCount() < 14) {
