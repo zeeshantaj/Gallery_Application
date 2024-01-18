@@ -9,9 +9,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -30,29 +34,47 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
 
 
     private List<Bucket> bucketList;
-
     private BucketRecyclerAdapter adapter;
     private RecyclerView recyclerView;
     private RelativeLayout splashLayout;
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
+    private String readMediaImageIn_13 = Manifest.permission.READ_MEDIA_IMAGES;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_retrivel);
 
         showSplashScreen();
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted, request it
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_READ_EXTERNAL_STORAGE);
-        } else {
-            // Permission is already granted, proceed with loading the image
+
+        if (Build.VERSION.SDK_INT >= 33){
+            ActivityCompat.requestPermissions(this,new String[]{readMediaImageIn_13},REQUEST_READ_EXTERNAL_STORAGE);
+        } else if (Build.VERSION.SDK_INT <= 30) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
+            } else {
+                // Permission already granted, proceed with loading the image
+                String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
+                new ImageDirectoriesAsyncTask().execute(new File(ROOT_DIR));
+            }
+        }
+        else {
+            // For versions below Android 6.0, permission is granted in the manifest
             String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
-            //File file = new File(String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)));
             new ImageDirectoriesAsyncTask().execute(new File(ROOT_DIR));
         }
-
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
+//            } else {
+//                // Permission already granted, proceed with loading the image
+//                String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
+//                new ImageDirectoriesAsyncTask().execute(new File(ROOT_DIR));
+//            }
+//        } else {
+//            // For versions below Android 6.0, permission is granted in the manifest
+//            String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
+//            new ImageDirectoriesAsyncTask().execute(new File(ROOT_DIR));
+//        }
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -61,7 +83,6 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, proceed with loading the image
                 String ROOT_DIR = Environment.getExternalStorageDirectory().getPath();
-                //File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getPath());
                 new ImageDirectoriesAsyncTask().execute(new File(ROOT_DIR));
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
             } else {
@@ -74,7 +95,10 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
         @Override
         protected List<Bucket> doInBackground(File... params) {
             File rootDirectory = params[0];
-            return findImageDirectories(rootDirectory);
+            List<Bucket> result = findImageDirectories(rootDirectory);
+
+            return result;
+//            return findImageDirectories(rootDirectory);
         }
 
         @Override
@@ -83,10 +107,7 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
             bucketList = result;
 
             Log.e("Myapp", "BucketSize" + bucketList.size());
-
             // Hide splash screen
-
-
             hideSplashScreen();
 
             recyclerView = findViewById(R.id.imageFolderRecycler);
@@ -96,6 +117,9 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
             adapter = new BucketRecyclerAdapter(bucketList);
             recyclerView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
+
+
+            // Load the remaining 75% of the data after a delay (you can adjust the delay as needed)
         }
     }
     private List<Bucket> findImageDirectories(File directory) {
@@ -121,9 +145,6 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
         }
         return imageDirectories;
     }
-
-//        File[] directory1 = new File(String.valueOf(Environment.getExternalStoragePublicDirectory(Arrays.toString(directory.listFiles(imageFilter))))).listFiles();
-//        Log.e("MyApp","directory "+"images "+ Arrays.toString(directory1));
 
     private List<String> getLastFourImages(File directory) {
         List<String> imagePaths = new ArrayList<>();

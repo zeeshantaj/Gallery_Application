@@ -2,6 +2,7 @@ package com.example.gallery_application;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,7 +40,6 @@ public class MainActivity extends AppCompatActivity {
     private int initialSpanCount = 4;
     private ScaleGestureDetector scaleGestureDetector;
     private GridLayoutManager layoutManager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
         adapter=new ImageAdapter(imagesData,this,initialSpanCount);
         recyclerView.setAdapter(adapter);
         // Load the initial batch of images
+
+
         retrieveImages(startIndex, batchSize);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

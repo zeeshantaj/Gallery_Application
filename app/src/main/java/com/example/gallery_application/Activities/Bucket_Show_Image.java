@@ -4,6 +4,7 @@ import static com.example.gallery_application.Activities.Image_Retrivel_Activity
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -14,6 +15,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -41,6 +43,7 @@ public class Bucket_Show_Image extends AppCompatActivity {
     private ScaleGestureDetector scaleGestureDetector;
     private int initialSpanCount = 4;
     private int pageSize = 10;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

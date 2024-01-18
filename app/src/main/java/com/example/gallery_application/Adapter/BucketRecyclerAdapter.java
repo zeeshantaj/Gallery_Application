@@ -27,7 +27,15 @@ public class BucketRecyclerAdapter extends RecyclerView.Adapter<BucketRecyclerAd
     public BucketRecyclerAdapter(List<Bucket> folderModels) {
         this.bucketList = folderModels;
     }
-
+    public void setBucketList(List<Bucket> bucketList) {
+        this.bucketList = bucketList;
+        notifyDataSetChanged();
+    }
+    public void addData(List<Bucket> newData) {
+        int startPosition = bucketList.size();
+        bucketList.addAll(newData);
+        notifyItemRangeInserted(startPosition, newData.size());
+    }
     @NonNull
     @Override
     public BucketRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
