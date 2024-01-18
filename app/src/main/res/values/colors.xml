@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="grey">#EAE7E7</color>
     <color name="splashBg">#B4FDB7</color>
+    <color name="bucketBg">#C2ECF6</color>
 </resources>
