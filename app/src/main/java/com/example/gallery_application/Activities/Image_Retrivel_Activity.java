@@ -35,9 +35,6 @@ public class Image_Retrivel_Activity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RelativeLayout splashLayout;
     private static final int REQUEST_READ_EXTERNAL_STORAGE = 1;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

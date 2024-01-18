@@ -4,12 +4,15 @@ import static com.example.gallery_application.Activities.Image_Retrivel_Activity
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,12 +47,14 @@ public class Bucket_Show_Image extends AppCompatActivity {
         setContentView(R.layout.activity_bucket_show_image);
 
 
+
         recyclerView = findViewById(R.id.bucketRecycler);
         Intent intent = getIntent();
         bucketPath = intent.getStringExtra("BucketPath");
         bucketList = new ArrayList<>();
 
-        loadImagesFromDirectory(bucketPath,startIndex,pageSize);
+        //loadImagesFromDirectory(bucketPath,startIndex,pageSize);
+        loadImagesFromDirectory(bucketPath);
 
         adapter = new Bucket_ImagesAdapter(bucketList,initialSpanCount);
         layoutManager = new GridLayoutManager(this, initialSpanCount);
@@ -70,7 +75,8 @@ public class Bucket_Show_Image extends AppCompatActivity {
 //                    startIndex += batchSize;
 //                    loadImagesFromDirectory(bucketPath);
                     startIndex += pageSize;
-                    loadImagesFromDirectory(bucketPath,startIndex,pageSize);
+                    loadImagesFromDirectory(bucketPath);
+                    //loadImagesFromDirectory(bucketPath,startIndex,pageSize);
                     Log.e("MyApp","pageSize"+pageSize);
                     Log.e("MyApp","start index "+startIndex);
                 }
@@ -91,14 +97,14 @@ public class Bucket_Show_Image extends AppCompatActivity {
         public boolean onScale(ScaleGestureDetector detector) {
             float scaleFactor = detector.getScaleFactor();
 
-            if (scaleFactor > 1.0f && layoutManager.getSpanCount() < 14) {
+            if (scaleFactor > 1.0f && layoutManager.getSpanCount() > 4) {
                 // Zoom in - Limit the maximum span count to 8 (adjust as needed)
-                updateSpanCount(layoutManager.getSpanCount() + 1);
+                updateSpanCount(layoutManager.getSpanCount() - 1);
                 return true;
             }
-            else if (scaleFactor < 1.0f && layoutManager.getSpanCount() > 4) {
+            else if (scaleFactor < 1.0f && layoutManager.getSpanCount() < 14) {
                 // Zoom out - Limit the minimum span count to 1 (adjust as needed)
-                updateSpanCount(layoutManager.getSpanCount() - 1);
+                updateSpanCount(layoutManager.getSpanCount() + 1);
                 return true;
             }
 
@@ -128,34 +134,8 @@ public class Bucket_Show_Image extends AppCompatActivity {
         }, 100); // Delay added to ensure the RecyclerView layout is updated after the adapter change
     }
 
-    private List<ImagesData> loadImagesFromDirectory(String directoryPath, int startPosition, int pageSize) {
-        //List<ImagesData> imageList = new ArrayList<>();
-        File directory = new File(directoryPath);
-
-        // Check if the directory exists and is a directory
-        if (directory.exists() && directory.isDirectory()) {
-            // List all files in the directory
-            File[] files = directory.listFiles();
-
-            if (files != null) {
-                int endPosition = Math.min(startPosition + pageSize, files.length);
-                for (int i = startPosition; i < endPosition; i++) {
-                    File file = files[i];
-                    // Add the file path to the list if it is an image file
-                    if (isImageFile(file)) {
-                        ImagesData imagesData = new ImagesData(file.getAbsolutePath());
-                        //imageList.add(imagesData);
-                        bucketList.add(imagesData);
-                    }
-                }
-            }
-        }
-        return bucketList;
-    }
-
-//    public  List<String> loadImagesFromDirectory(String directoryPath) {
-//        List<String> imagePaths = new ArrayList<>();
-//        bucketList.clear();
+//    private List<ImagesData> loadImagesFromDirectory(String directoryPath, int startPosition, int pageSize) {
+//        //List<ImagesData> imageList = new ArrayList<>();
 //        File directory = new File(directoryPath);
 //
 //        // Check if the directory exists and is a directory
@@ -164,21 +144,45 @@ public class Bucket_Show_Image extends AppCompatActivity {
 //            File[] files = directory.listFiles();
 //
 //            if (files != null) {
-//                for (File file : files) {
+//                int endPosition = Math.min(startPosition + pageSize, files.length);
+//                for (int i = startPosition; i < endPosition; i++) {
+//                    File file = files[i];
 //                    // Add the file path to the list if it is an image file
 //                    if (isImageFile(file)) {
-//                        imagePaths.add(file.getAbsolutePath());
 //                        ImagesData imagesData = new ImagesData(file.getAbsolutePath());
+//                        //imageList.add(imagesData);
 //                        bucketList.add(imagesData);
-//                       // adapter.submitData(bucketList);
-//
 //                    }
 //                }
 //            }
 //        }
-//
-//        return imagePaths;
+//        return bucketList;
 //    }
+
+    public  List<String> loadImagesFromDirectory(String directoryPath) {
+        List<String> imagePaths = new ArrayList<>();
+        bucketList.clear();
+        File directory = new File(directoryPath);
+
+        // Check if the directory exists and is a directory
+        if (directory.exists() && directory.isDirectory()) {
+            // List all files in the directory
+            File[] files = directory.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    // Add the file path to the list if it is an image file
+                    if (isImageFile(file)) {
+                        imagePaths.add(file.getAbsolutePath());
+                        ImagesData imagesData = new ImagesData(file.getAbsolutePath());
+                        bucketList.add(imagesData);
+                    }
+                }
+            }
+        }
+
+        return imagePaths;
+    }
 
     private boolean isImageFile(File file) {
         // Check if the file has an image file extension

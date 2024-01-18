@@ -8,14 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.gallery_application.ImageShowActivity;
 import com.example.gallery_application.Model.ImagesData;
 import com.example.gallery_application.R;
 import com.example.gallery_application.ViewPagerActivity;

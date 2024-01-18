@@ -5,10 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/transparent"
     app:dragDismissDistance="60dp"
     app:dragDismissScale="0.60"
     tools:context=".ViewPagerActivity"
-    android:id="@+id/dragDismiss">
+    android:id="@+id/dragDismiss"
+    >
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -32,12 +34,5 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentBottom="true" />
-
-
     </androidx.core.widget.NestedScrollView>
-
-
-
-
-
 </com.commit451.elasticdragdismisslayout.ElasticDragDismissFrameLayout>

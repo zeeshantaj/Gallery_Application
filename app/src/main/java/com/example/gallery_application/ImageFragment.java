@@ -51,27 +51,11 @@ public class ImageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image, container, false);
         PhotoView imageView = rootView.findViewById(R.id.imageView);
-        //ImageView imageView = rootView.findViewById(R.id.imageView);
 
-       // GestureDetector gestureDetector = new GestureDetector(getActivity(),new MyGestureListener());
         Glide.with(this)
                 .load(imagePath)
                 .into(imageView);
-//
-
        imageView.setMaximumScale(5); // Adjust the maximum zoom level as needed
-//        imageView.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                gestureDetector.onTouchEvent(event);
-//                return true;
-//            }
-//        });
-
-      //  hideSystemUI();
-
-
-
 
 
         return rootView;
