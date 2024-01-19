@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.gallery_application.Activities.Bucket;
 import com.example.gallery_application.Activities.Bucket_Show_Image;
 import com.example.gallery_application.R;
@@ -54,6 +56,8 @@ public class BucketRecyclerAdapter extends RecyclerView.Adapter<BucketRecyclerAd
             Uri contentUri = Uri.fromFile(new File(imagePath));
 
             Glide.with(holder.itemView.getContext())
+                    .applyDefaultRequestOptions(new RequestOptions()
+                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC))
                     .load(contentUri)
                     .into(holder.imageViews[i]);
         }
